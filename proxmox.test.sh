@@ -15,6 +15,8 @@ apt upgrade -y
 # Prompt for CTID, hostname, rootfs size
 read -p "Enter CTID (numeric): " CTID
 read -p "Enter hostname: " HOSTNAME
+read -p "Enter number of CPU cores to assign (default 1): " CORES
+CORES=${CORES:-1}
 read -p "Enter rootfs size (in GB, e.g. 32): " ROOTFS_SIZE
 read -p "Enter memory size (in MB, default 512): " MEMORY
 MEMORY=${MEMORY:-512}
@@ -27,7 +29,7 @@ echo
 
 # Create LXC container
 pct create "$CTID" local:vztmpl/debian-bookworm-20231124_arm64.tar.xz \
-  --cores 1 \
+  --cores "$CORES" \
   --features nesting=1 \
   --hostname "$HOSTNAME" \
   --memory "$MEMORY" \
@@ -37,6 +39,27 @@ pct create "$CTID" local:vztmpl/debian-bookworm-20231124_arm64.tar.xz \
   --unprivileged 1
 
 echo "✅ Container $CTID ($HOSTNAME) created successfully."
+
+# Ask if user wants to add one or more mount points
+MOUNT_INDEX=0
+while true; do
+  read -p "Do you want to add a mount point? (y/n): " ADD_MOUNT
+  if [[ "$ADD_MOUNT" =~ ^[Yy]$ ]]; then
+    read -p "Enter host directory to mount (e.g. /mnt/data): " HOST_MOUNT
+    read -p "Enter container mount path (e.g. /mnt/data): " CT_MOUNT
+
+    if [[ -d "$HOST_MOUNT" ]]; then
+      echo "🔗 Adding mount point mp$MOUNT_INDEX..."
+      pct set "$CTID" -mp$MOUNT_INDEX "$HOST_MOUNT",mp="$CT_MOUNT"
+      echo "✅ Mount point added: $HOST_MOUNT → $CT_MOUNT (mp$MOUNT_INDEX)"
+      ((MOUNT_INDEX++))
+    else
+      echo "❌ Host directory does not exist: $HOST_MOUNT"
+    fi
+  else
+    break
+  fi
+done
 
 # Prompt to start and configure container
 read -p "Do you want to start container $CTID now? (y/n): " START_CT
