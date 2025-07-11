@@ -28,24 +28,16 @@ fi
 # Detect storage type (dir or lvm)
 STORAGE_TYPE=$(pvesm status --storage "$STORAGE" 2>/dev/null | awk 'NR==2 {print $2}')
 
-if [[ -z "$STORAGE_TYPE" ]]; then
-  echo "❌ Could not detect storage type for '$STORAGE'. Check with: pvesm status"
-  exit 1
-fi
-
-# Adjust --rootfs option based on storage type
-read -p "Enter root filesystem size (e.g., 8G): " ROOTFS_SIZE
+# Clean size input (remove G/g)
 CLEAN_ROOTFS_SIZE="${ROOTFS_SIZE//[Gg]/}"
 
-# Get storage type
-STORAGE_TYPE=$(pvesm status --storage "$STORAGE" 2>/dev/null | awk 'NR==2 {print $2}')
-
-# Safe --rootfs for both types
+# Set rootfs option based on storage type
 if [[ "$STORAGE_TYPE" == "dir" ]]; then
-  ROOTFS_OPT="--rootfs ${STORAGE}:${CLEAN_ROOTFS_SIZE}"
+  ROOTFS_OPT="--storage ${STORAGE}"  # Don't pass --rootfs with dir
 else
-  ROOTFS_OPT="--rootfs ${STORAGE}:${ROOTFS_SIZE}"
+  ROOTFS_OPT="--rootfs ${STORAGE}:${CLEAN_ROOTFS_SIZE}"
 fi
+
 
 
 # Confirm configuration
