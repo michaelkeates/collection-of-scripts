@@ -81,9 +81,11 @@ if [[ "$START_CT" =~ ^[Yy]$ ]]; then
   "
   
   # Optional: Install Docker as that user
-  echo "🐳 Installing Docker inside container as $NEWUSER..."
+  echo "🐳 Installing Docker inside container as root..."
   pct exec "$CTID" -- bash -c "apt install -y curl"
-  pct exec "$CTID" -- su - "$NEWUSER" -c "curl -fsSL https://get.docker.com | sh"
+  pct exec "$CTID" -- bash -c "curl -fsSL https://get.docker.com | sh"
+  
+  echo "👥 Adding $NEWUSER to docker group..."
   pct exec "$CTID" -- bash -c "usermod -aG docker $NEWUSER"
   
   echo "✅ Docker installed and $NEWUSER added to docker group."
