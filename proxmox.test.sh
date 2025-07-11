@@ -8,7 +8,7 @@ if [[ "$EUID" -ne 0 ]]; then
   exit 1
 fi
 
-# Update system
+# Update host system
 apt update
 apt upgrade -y
 
@@ -20,6 +20,10 @@ read -p "Enter memory size (in MB, default 512): " MEMORY
 MEMORY=${MEMORY:-512}
 read -p "Enter swap size (in MB, default 512): " SWAP
 SWAP=${SWAP:-512}
+
+# Prompt for root password to set inside container
+read -s -p "Enter root password for container: " ROOTPASS
+echo
 
 # Create LXC container
 pct create "$CTID" local:vztmpl/debian-bookworm-20231124_arm64.tar.xz \
@@ -34,16 +38,26 @@ pct create "$CTID" local:vztmpl/debian-bookworm-20231124_arm64.tar.xz \
 
 echo "✅ Container $CTID ($HOSTNAME) created successfully."
 
-# Prompt to start container
+# Prompt to start and configure container
 read -p "Do you want to start container $CTID now? (y/n): " START_CT
 if [[ "$START_CT" =~ ^[Yy]$ ]]; then
   pct start "$CTID"
   echo "🚀 Container $CTID started."
 
-  # Prompt to open shell inside container
+  # Wait briefly to ensure container is ready
+  sleep 2
+
+  echo "🔐 Setting root password inside the container..."
+  pct exec "$CTID" -- bash -c "echo 'root:$ROOTPASS' | chpasswd"
+
+  echo "📦 Running apt update & upgrade inside the container..."
+  pct exec "$CTID" -- bash -c "apt update && apt upgrade -y"
+
+  echo "✅ Root password set and system updated inside container $CTID."
+
+  # Prompt to optionally enter container
   read -p "Do you want to open a shell inside container $CTID now? (y/n): " OPEN_SHELL
   if [[ "$OPEN_SHELL" =~ ^[Yy]$ ]]; then
-    echo "🔑 Opening shell inside container $CTID..."
     pct enter "$CTID"
   else
     echo "⏸ Shell not opened."
@@ -51,8 +65,3 @@ if [[ "$START_CT" =~ ^[Yy]$ ]]; then
 else
   echo "⏸ Container $CTID not started."
 fi
-
-read -s -p "Enter root password for container: " ROOTPASS
-echo
-pct exec "$CTID" -- bash -c "echo 'root:$ROOTPASS' | chpasswd"
-echo "✅ Root password set inside container."
