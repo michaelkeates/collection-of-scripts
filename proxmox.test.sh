@@ -31,8 +31,7 @@ pct create "$CTID" local:vztmpl/debian-bookworm-20231124_arm64.tar.xz \
   --features nesting=1 \
   --hostname "$HOSTNAME" \
   --memory "$MEMORY" \
-  # --net0 name=eth0,bridge=vmbr0,firewall=1 \
-  --net0 name=eth0,bridge=vmbr0,firewall=1,ip=dhcp
+  --net0 name=eth0,bridge=vmbr0,firewall=1 \
   --rootfs local:"$ROOTFS_SIZE" \
   --swap "$SWAP" \
   --unprivileged 1
