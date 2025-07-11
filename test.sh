@@ -8,23 +8,38 @@ if [[ "$EUID" -ne 0 ]]; then
   exit 1
 fi
 
+# Prompt for new username
+read -p "👤 Enter username to create: " NEWUSER
+
 # Update system
 apt update
 apt upgrade -y
 
-# Create user if not exists
-if id "mike" &>/dev/null; then
-  echo "👤 User 'mike' already exists."
+# Check if user exists
+if id "$NEWUSER" &>/dev/null; then
+  echo "⚠️ User '$NEWUSER' already exists."
 else
-  adduser --disabled-password --gecos "" mike
-  echo "🔐 Please set a password for 'mike' manually later if needed."
+  # Prompt for password
+  read -s -p "🔑 Enter password for $NEWUSER: " USERPASS
+  echo
+
+  # Create user without prompting for other info
+  adduser --disabled-password --gecos "" "$NEWUSER"
+
+  # Set the password
+  echo "$NEWUSER:$USERPASS" | chpasswd
+  echo "✅ User '$NEWUSER' created with specified password."
 fi
 
 # Add to sudo group
-usermod -aG sudo mike
-echo "✅ Added 'mike' to the sudo group."
+usermod -aG sudo "$NEWUSER"
+echo "✅ Added '$NEWUSER' to the sudo group."
 
-# Run commands as mike
-sudo -u mike bash -c 'echo "👋 Now running as: $(whoami)"'
-sudo -u mike bash -c 'sudo apt update'
-sudo -u mike bash -c 'curl -sSL https://get.docker.com | sh'
+# Run commands as the new user
+sudo -u "$NEWUSER" bash -c 'echo "👋 Now running as: $(whoami)"'
+sudo -u "$NEWUSER" bash -c 'sudo apt update'
+sudo -u "$NEWUSER" bash -c 'curl -sSL https://get.docker.com | sh'
+sudo -u "$NEWUSER" bash -c "sudo usermod -aG docker $NEWUSER"
+
+echo "✅ Completed. Logging out."
+exit
