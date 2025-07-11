@@ -7,7 +7,7 @@ LOGFILE="/var/log/pbs-backup.log"
 
 echo "[$(date)] Checking PBS port ${PBS_PORT} on ${PBS_IP}..." >> "$LOGFILE"
 
-if nc -z -w 3 "$PBS_IP" "$PBS_PORT"; then
+if timeout 3 bash -c "echo > /dev/tcp/$PBS_IP/$PBS_PORT" 2>/dev/null; then
     echo "[$(date)] PBS is reachable. Starting vzdump..." >> "$LOGFILE"
     vzdump --all --storage "$STORAGE" --mode snapshot --compress zstd --remove 0 >> "$LOGFILE" 2>&1
     echo "[$(date)] Backup completed." >> "$LOGFILE"
