@@ -47,15 +47,18 @@ if [[ "$START_CT" =~ ^[Yy]$ ]]; then
   # Wait briefly to ensure container is ready
   sleep 4
 
-  pct exec "$CTID" -- bash -c "dhclient"
-
-  sleep 4
-
   echo "🔐 Setting root password inside the container..."
   pct exec "$CTID" -- bash -c "echo 'root:$ROOTPASS' | chpasswd"
 
+  pct enter "$CTID"
+
+  sleep 4
+
+  dhclient
+
   echo "📦 Running apt update & upgrade inside the container..."
-  pct exec "$CTID" -- bash -c "apt update && apt upgrade -y"
+   # pct exec "$CTID" -- bash -c "apt update && apt upgrade -y"
+  apt update
 
   echo "✅ Root password set and system updated inside container $CTID."
 
