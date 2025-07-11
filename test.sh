@@ -41,5 +41,4 @@ sudo -u "$NEWUSER" bash -c 'sudo apt update'
 sudo -u "$NEWUSER" bash -c 'curl -sSL https://get.docker.com | sh'
 sudo -u "$NEWUSER" bash -c "sudo usermod -aG docker $NEWUSER"
 
-echo "✅ Completed. Logging out."
-exit
+echo "✅ Completed."
