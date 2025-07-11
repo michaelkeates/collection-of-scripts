@@ -52,12 +52,42 @@ if [[ "$START_CT" =~ ^[Yy]$ ]]; then
 
   sleep 4
 
+  echo "🔐 Enabling dhclient..."
   pct exec "$CTID" -- bash -c "dhclient"
 
   sleep 4
 
   echo "📦 Running apt update & upgrade inside the container..."
   pct exec "$CTID" -- bash -c "apt update && apt upgrade -y"
+
+  # Prompt to create a new user inside the container
+  read -p "👤 Enter username to create inside container: " NEWUSER
+  
+  # Prompt for user password
+  read -s -p "🔑 Enter password for $NEWUSER: " USERPASS
+  echo
+  
+  echo "👤 Creating user '$NEWUSER' inside container $CTID..."
+  
+  pct exec "$CTID" -- bash -c "
+    if id \"$NEWUSER\" &>/dev/null; then
+      echo '⚠️ User \"$NEWUSER\" already exists.'
+    else
+      adduser --disabled-password --gecos \"\" \"$NEWUSER\"
+      echo \"$NEWUSER:$USERPASS\" | chpasswd
+      usermod -aG sudo \"$NEWUSER\"
+      echo '✅ User \"$NEWUSER\" created and added to sudo group.'
+    fi
+  "
+  
+  # Optional: Install Docker as that user
+  echo "🐳 Installing Docker inside container as $NEWUSER..."
+  pct exec "$CTID" -- bash -c "apt install -y curl"
+  pct exec "$CTID" -- su - "$NEWUSER" -c "curl -fsSL https://get.docker.com | sh"
+  pct exec "$CTID" -- bash -c "usermod -aG docker $NEWUSER"
+  
+  echo "✅ Docker installed and $NEWUSER added to docker group."
+
 
   echo "✅ Root password set and system updated inside container $CTID."
 
