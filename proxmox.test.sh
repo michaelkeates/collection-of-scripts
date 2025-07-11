@@ -45,7 +45,11 @@ if [[ "$START_CT" =~ ^[Yy]$ ]]; then
   echo "🚀 Container $CTID started."
 
   # Wait briefly to ensure container is ready
-  sleep 2
+  sleep 4
+
+  pct exec "$CTID" -- bash -c "dhclient"
+
+  sleep 4
 
   echo "🔐 Setting root password inside the container..."
   pct exec "$CTID" -- bash -c "echo 'root:$ROOTPASS' | chpasswd"
