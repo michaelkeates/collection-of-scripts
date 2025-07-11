@@ -64,7 +64,7 @@ add_mount_points() {
 }
 
 start_and_configure_container() {
-  read -p "Do you want to start container $CTID now? (y/n): " START_CT
+  read -p "Do you want to start container $CTID ($HOSTNAME) now? (y/n): " START_CT
   if [[ "$START_CT" =~ ^[Yy]$ ]]; then
     pct start "$CTID"
     echo "🚀 Container $CTID started."
