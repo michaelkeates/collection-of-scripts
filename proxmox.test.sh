@@ -94,7 +94,7 @@ create_user_inside_container() {
   read -s -p "🔑 Enter password for $NEWUSER: " USERPASS
   echo
 
-  echo "👤 Creating user '$NEWUSER' inside container $CTID..."
+  echo "👤 Creating user '$NEWUSER' inside container $CTID ($HOSTNAME)..."
   pct exec "$CTID" -- bash -c "
     if id \"$NEWUSER\" &>/dev/null; then
       echo '⚠️ User \"$NEWUSER\" already exists.'
@@ -119,7 +119,7 @@ install_docker() {
 }
 
 offer_shell_access() {
-  read -p "Do you want to open a shell inside container $CTID now? (y/n): " OPEN_SHELL
+  read -p "Do you want to open a shell inside container $CTID ($HOSTNAME) now? (y/n): " OPEN_SHELL
   if [[ "$OPEN_SHELL" =~ ^[Yy]$ ]]; then
     pct enter "$CTID"
   else
