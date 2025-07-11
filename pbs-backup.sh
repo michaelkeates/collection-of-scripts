@@ -2,7 +2,7 @@
 
 PBS_IP="192.168.1.86"
 PBS_PORT=8007
-STORAGE="backup"
+STORAGE="pbs"
 LOGFILE="/var/log/pbs-backup.log"
 
 echo "[$(date)] Checking PBS port ${PBS_PORT} on ${PBS_IP}..." >> "$LOGFILE"
