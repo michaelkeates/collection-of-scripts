@@ -34,11 +34,19 @@ if [[ -z "$STORAGE_TYPE" ]]; then
 fi
 
 # Adjust --rootfs option based on storage type
+read -p "Enter root filesystem size (e.g., 8G): " ROOTFS_SIZE
+CLEAN_ROOTFS_SIZE="${ROOTFS_SIZE//[Gg]/}"
+
+# Get storage type
+STORAGE_TYPE=$(pvesm status --storage "$STORAGE" 2>/dev/null | awk 'NR==2 {print $2}')
+
+# Safe --rootfs for both types
 if [[ "$STORAGE_TYPE" == "dir" ]]; then
-  ROOTFS_OPT="--rootfs ${STORAGE}"
+  ROOTFS_OPT="--rootfs ${STORAGE}:${CLEAN_ROOTFS_SIZE}"
 else
   ROOTFS_OPT="--rootfs ${STORAGE}:${ROOTFS_SIZE}"
 fi
+
 
 # Confirm configuration
 echo -e "\n📦 Creating CT with the following configuration:"
