@@ -33,3 +33,26 @@ pct create "$CTID" local:vztmpl/debian-bookworm-20231124_arm64.tar.xz \
   --unprivileged 1
 
 echo "✅ Container $CTID ($HOSTNAME) created successfully."
+
+# Prompt to start container
+read -p "Do you want to start container $CTID now? (y/n): " START_CT
+if [[ "$START_CT" =~ ^[Yy]$ ]]; then
+  pct start "$CTID"
+  echo "🚀 Container $CTID started."
+
+  # Prompt to open shell inside container
+  read -p "Do you want to open a shell inside container $CTID now? (y/n): " OPEN_SHELL
+  if [[ "$OPEN_SHELL" =~ ^[Yy]$ ]]; then
+    echo "🔑 Opening shell inside container $CTID..."
+    pct enter "$CTID"
+  else
+    echo "⏸ Shell not opened."
+  fi
+else
+  echo "⏸ Container $CTID not started."
+fi
+
+read -s -p "Enter root password for container: " ROOTPASS
+echo
+pct exec "$CTID" -- bash -c "echo 'root:$ROOTPASS' | chpasswd"
+echo "✅ Root password set inside container."
