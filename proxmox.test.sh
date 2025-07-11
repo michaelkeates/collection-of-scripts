@@ -82,7 +82,14 @@ start_and_configure_container() {
     pct exec "$CTID" -- bash -c "apt update && apt upgrade -y"
 
     create_user_inside_container
-    install_docker
+
+    read -p "Do you want to install Docker inside the container? (y/n): " INSTALL_DOCKER
+    if [[ "$INSTALL_DOCKER" =~ ^[Yy]$ ]]; then
+      install_docker
+    else
+      echo "🐳 Skipping Docker installation."
+    fi
+
     offer_shell_access
   else
     echo "⏸ Container $CTID not started."
