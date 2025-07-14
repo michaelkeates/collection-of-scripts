@@ -134,13 +134,41 @@ install_docker() {
 
 install_samba() {
   echo "Installing Samba inside container as root..."
-  pct exec "$CTID" -- bash -c "apt install -y samba"
+  pct exec "$CTID" -- bash -c "apt update && apt install -y samba curl"
 
   echo "Making backup of smb.conf..."
   pct exec "$CTID" -- bash -c "mv /etc/samba/smb.conf /etc/samba/smb.conf.bak"
 
-  echo "Generate new smb.conf..."
-  pct exec "$CTID" -- bash -c "cat <<'EOF' > /etc/samba/smb.conf"
+  echo "Downloading new smb.conf from GitHub..."
+  pct exec "$CTID" -- bash -c "curl -fsSL https://raw.githubusercontent.com/michaelkeates/collection-of-scripts/main/smb.conf -o /etc/samba/smb.conf"
+
+  echo "👥 Setting $NEWUSER password for Samba..."
+  pct exec "$CTID" -- bash -c "smbpasswd -a $NEWUSER"
+
+  echo "Enable Samba services..."
+  pct exec "$CTID" -- bash -c "systemctl enable smbd"
+  sleep 4
+  pct exec "$CTID" -- bash -c "systemctl enable nmbd"
+  sleep 4
+
+  echo "Restart Samba services..."
+  pct exec "$CTID" -- bash -c "systemctl restart smbd"
+  sleep 4
+  pct exec "$CTID" -- bash -c "systemctl restart nmbd"
+  sleep 4
+
+  echo "Install wsdd for Windows discovery..."
+  pct exec "$CTID" -- bash -c "apt update && apt install -y wsdd wsdd-server"
+
+  echo "Allow services through firewall..."
+  pct exec "$CTID" -- bash -c "ufw allow OpenSSH"
+  pct exec "$CTID" -- bash -c "ufw allow Samba"
+  pct exec "$CTID" -- bash -c "ufw allow 3702/udp"
+  pct exec "$CTID" -- bash -c "ufw allow 5357/tcp"
+  pct exec "$CTID" -- bash -c "ufw allow 5358/tcp"
+
+  echo "Check ufw status..."
+  pct exec "$CTID" -- bash -c "ufw status"
 
   echo "✅ Samba installed."
 }
