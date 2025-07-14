@@ -136,10 +136,10 @@ install_samba() {
   echo "Installing Samba inside container as root..."
   pct exec "$CTID" -- bash -c "apt update && apt install -y samba curl"
 
-  echo "Making backup of smb.conf..."
-  pct exec "$CTID" -- bash -c "mv /etc/samba/smb.conf /etc/samba/smb.conf.bak"
+  echo "Backing up smb.conf (only if no .bak exists)..."
+  pct exec "$CTID" -- bash -c "[ -f /etc/samba/smb.conf.bak ] || cp /etc/samba/smb.conf /etc/samba/smb.conf.bak"
 
-  echo "Downloading new smb.conf from GitHub..."
+  echo "Replacing smb.conf from GitHub..."
   pct exec "$CTID" -- bash -c "curl -fsSL https://raw.githubusercontent.com/michaelkeates/collection-of-scripts/main/smb.conf -o /etc/samba/smb.conf"
 
   echo "👥 Setting $NEWUSER password for Samba..."
