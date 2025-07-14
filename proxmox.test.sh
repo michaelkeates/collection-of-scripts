@@ -90,6 +90,13 @@ start_and_configure_container() {
       echo "🐳 Skipping Docker installation."
     fi
 
+    read -p "Do you want to install Samba inside the container? (y/n): " INSTALL_SAMBA
+    if [[ "$INSTALL_SAMBA" =~ ^[Yy]$ ]]; then
+      install_docker
+    else
+      echo "Skipping Samba installation."
+    fi
+
     offer_shell_access
   else
     echo "⏸ Container $CTID not started."
@@ -123,6 +130,19 @@ install_docker() {
   pct exec "$CTID" -- bash -c "usermod -aG docker $NEWUSER"
 
   echo "✅ Docker installed and $NEWUSER added to docker group."
+}
+
+install_samba() {
+  echo "Installing Samba inside container as root..."
+  pct exec "$CTID" -- bash -c "apt install -y samba"
+
+  echo "Making backup of smb.conf..."
+  pct exec "$CTID" -- bash -c "mv /etc/samba/smb.conf /etc/samba/smb.conf.bak"
+
+  echo "Generate new smb.conf..."
+  pct exec "$CTID" -- bash -c "cat <<'EOF' > /etc/samba/smb.conf"
+
+  echo "✅ Samba installed."
 }
 
 offer_shell_access() {
