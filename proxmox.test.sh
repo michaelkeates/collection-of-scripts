@@ -92,7 +92,7 @@ start_and_configure_container() {
 
     read -p "Do you want to install Samba inside the container? (y/n): " INSTALL_SAMBA
     if [[ "$INSTALL_SAMBA" =~ ^[Yy]$ ]]; then
-      install_docker
+      install_samba
     else
       echo "Skipping Samba installation."
     fi
