@@ -2,7 +2,7 @@
 
 # === LOAD PASSWORD FROM .env ===
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ENV_FILE="${SCRIPT_DIR}/.env"
+ENV_FILE="/mnt/docker/vaultwarden/.env"
 
 if [ -f "$ENV_FILE" ]; then
     source "$ENV_FILE"
