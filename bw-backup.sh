@@ -1,5 +1,21 @@
 #!/bin/bash
 
+# === LOAD PASSWORD FROM .env ===
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ENV_FILE="${SCRIPT_DIR}/.env"
+
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+else
+    echo "ERROR: .env file not found at $ENV_FILE"
+    exit 1
+fi
+
+if [ -z "$BACKUP_PASSWORD" ]; then
+    echo "ERROR: BACKUP_PASSWORD is not set in .env"
+    exit 1
+fi
+
 # === CONFIGURATION ===
 CONTAINER_NAME="vaultwarden-bitwarden-1"
 DATA_DIR="/mnt/docker/vaultwarden/bw-data"
@@ -12,24 +28,27 @@ echo "Starting Vaultwarden backup..."
 mkdir -p "$BACKUP_DIR"
 
 # === STOP CONTAINER ===
-echo "Stopping Vaultwarden container to ensure clean DB copy..."
+echo "Stopping Vaultwarden container..."
 docker stop "$CONTAINER_NAME"
 
-# === COPY DATA DIR (INCLUDING SQLITE DB) ===
-echo "Copying Vaultwarden data directory..."
-rm -rf "$TEMP_COPY"         # clean previous temp data
+# === COPY DATA DIRECTORY ===
+echo "Copying Vaultwarden data..."
+rm -rf "$TEMP_COPY"
 cp -r "$DATA_DIR" "$TEMP_COPY"
 
-# === START CONTAINER AGAIN ===
+# === START CONTAINER ===
 echo "Restarting Vaultwarden container..."
 docker start "$CONTAINER_NAME"
 
-# === COMPRESS WITH 7-ZIP (TIMESTAMPED ARCHIVE) ===
-echo "Creating timestamped archive: $ARCHIVE_FILE"
-7z a -t7z "$ARCHIVE_FILE" "$TEMP_COPY" >/dev/null
+# === CREATE PASSWORD-PROTECTED ARCHIVE ===
+echo "Compressing with password protection..."
+7z a -t7z "$ARCHIVE_FILE" "$TEMP_COPY" -p"$BACKUP_PASSWORD" -mhe=on >/dev/null
 
-# === CLEAN UP TEMP BACKUP FOLDER ===
+# -pPASSWORD → sets archive password  
+# -mhe=on    → encrypts file names as well (more secure)
+
+# === CLEAN UP ===
 rm -rf "$TEMP_COPY"
 
-echo "Backup completed successfully!"
-echo "Backup file created: $ARCHIVE_FILE"
+echo "Backup completed!"
+echo "Archive created: $ARCHIVE_FILE"
