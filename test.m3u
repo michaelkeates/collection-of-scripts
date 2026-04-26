@@ -1,5 +1,5 @@
 #EXTM3U
 #EXTINF:-1 tvg-id="BBCOne.uk@Wales" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/BBC_Cymru_Wales_2022.svg/1280px-BBC_Cymru_Wales_2022.svg.png" group-title="General",BBC One Wales (1080p) [Geo-blocked]
 https://vs-cmaf-pushb-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_one_wales_hd/iptv_mse_v0_hevc.mpd
-#EXTINF:-1 tvg-id="TopGear.uk@SD" tvg-logo="https://i.imgur.com/S6Su6QH.png" group-title="Auto;Entertainment",Top Gear (720p)
+#EXTINF:-1 tvg-id="TopGear.uk@SD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/TopGearLogo.svg/250px-TopGearLogo.svg.png" group-title="Auto;Entertainment",Top Gear (720p)
 https://jmp2.uk/plu-636adc255bcf470007d6e0e2.m3u8
